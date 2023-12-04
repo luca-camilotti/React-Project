@@ -4,10 +4,14 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import MyButton from './components/Button'
 import MyToast from './components/Toast'
+import MyModal from './components/Modal'
 
 function App() {
   const [count, setCount] = useState(0);
   const [showtoast, setShowtoast] = useState(false);
+  const [showmodal, setShowmodal] = useState(false);
+  const [modalmessage, setModalmessage] = useState('');
+  const [id, setId] = useState(-1);  // element to delete
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
@@ -20,7 +24,8 @@ function App() {
        .catch((err) => {
           console.log(err.message);
        });
- }, []);  // run this function when component is loaded
+ }, [count]);  // run this function when component is loaded
+
 
   return (
     <>
@@ -58,12 +63,24 @@ function App() {
       <td>{item.level}</td>
       <td>{item.email}</td>
       <td>{item.pay}</td>
+      <td><MyButton onClick={()=>{
+        setModalmessage('Do you really want to delete item n. '+item.id+' ('+item.firstName+' '+item.lastName+')?');
+        setId(item.id);
+        setShowmodal(true);}}>Delete</MyButton></td>
     </tr>)}
   </tbody>
   </table>
 
   <MyButton onClick={()=>setShowtoast(true)}>Show Toast</MyButton>
   <MyToast visible={showtoast} toggleClose={ () => setShowtoast(false) } ></MyToast>
+  <MyModal visible={showmodal} title={'Warning'} 
+  message={modalmessage} 
+  handleClose={() => setShowmodal(false)} 
+  handleConfirm={() => {setShowmodal(false); 
+    fetch('http://localhost:8080/api/employees/'+id, { method: 'DELETE' })
+        .then(() => {setCount(count+1); setShowtoast(true);});
+    }}
+  ></MyModal>
 
     </>
   )
