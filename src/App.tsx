@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import MyButton from './components/Button'
+import MyToast from './components/Toast'
 
 function App() {
   const [count, setCount] = useState(0);
+  const [showtoast, setShowtoast] = useState(false);
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
@@ -59,7 +62,8 @@ function App() {
   </tbody>
   </table>
 
-
+  <MyButton onClick={()=>setShowtoast(true)}>Show Toast</MyButton>
+  <MyToast visible={showtoast} toggleClose={ () => setShowtoast(false) } ></MyToast>
 
     </>
   )
