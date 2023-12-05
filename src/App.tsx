@@ -8,6 +8,7 @@ import MyModal from './components/Modal'
 
 function App() {
   const [count, setCount] = useState(0);
+  const [reload, setReload] = useState(true);
   const [showtoast, setShowtoast] = useState(false);
   const [toastmessage, setToastmessage] = useState('');
   const [showmodal, setShowmodal] = useState(false);
@@ -17,7 +18,8 @@ function App() {
 
   // Download employees
   useEffect(() => {
-    fetch('http://localhost:8080/api/employees')
+    if(reload) {
+      fetch('http://localhost:8080/api/employees')
        .then((res) => res.json())
        .then((data) => {
           console.log(data);
@@ -26,25 +28,20 @@ function App() {
        .catch((err) => {
           console.log(err.message);
        });
- }, [employees]);  // run this function when component is loaded
-
+      setReload(false);
+    }
+  }, [reload]);  // run this function when reload is needed
+  
   // Show toast
-  useEffect(() => {
+  function runToast(message:string) {
+    setToastmessage(message);
     if(toastmessage.length > 0)
-      setShowtoast(true);
- }, [toastmessage]);  // run toast when toastmessage changes
-
- // Reset toast
- useEffect(() => {
-  if(showtoast==false)
-    setToastmessage('');  // reset toast message when toast disappear
-}, [showtoast]);  
-
-
+      setShowtoast(true)
+  }
 
   return (
     <>
-    <MyToast message={toastmessage} visible={showtoast} toggleClose={ () => { setShowtoast(false); setToastmessage(''); } } ></MyToast>
+    <MyToast message={toastmessage} visible={showtoast} toggleClose={ () => setShowtoast(false) } ></MyToast>
   
     {/* Create some comment:  */}
     {/*
@@ -68,6 +65,7 @@ function App() {
       <th scope="col">Level</th>
       <th scope="col">Email</th>
       <th scope="col">Pay</th>
+      <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
@@ -90,7 +88,7 @@ function App() {
   </tbody>
   </table>
 
-  <MyButton onClick={()=>setShowtoast(true)}>Show Toast</MyButton>
+  <MyButton onClick={()=>runToast('Toast example..')}>Show Toast</MyButton>
   <MyModal visible={showmodal} title={'Warning'} 
   message={modalmessage} 
   handleClose={() => setShowmodal(false)} 
@@ -98,15 +96,15 @@ function App() {
     fetch('http://localhost:8080/api/employees/'+id, { method: 'DELETE' })
         .then((response) => {
           if(response.status == 200) {
-            setToastmessage('Operation successful!');
-            setEmployees([]);
+            runToast('Operation successful!');            
           }
           else 
-            setToastmessage('Error! Item not found!');
+          runToast('Error! Item not found!');
+          setReload(true);
         
         })
         .catch(error => {
-          setToastmessage('Error! Item not found!');
+          runToast('Error! Item not found!');
           console.error('There was an error!', error);
       });
     }}
