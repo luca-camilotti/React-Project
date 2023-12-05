@@ -13,8 +13,7 @@ function MyModal({title, message, visible, handleClose, handleConfirm}: Props) {
   return (
     <div
       className="modal show"
-      style={{ display: 'block', position: 'initial' }}
-    >
+      style={{ display: 'block', position: 'initial' }}>
       <Modal show={visible} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>{title}</Modal.Title>

@@ -9,11 +9,13 @@ import MyModal from './components/Modal'
 function App() {
   const [count, setCount] = useState(0);
   const [showtoast, setShowtoast] = useState(false);
+  const [toastmessage, setToastmessage] = useState('');
   const [showmodal, setShowmodal] = useState(false);
   const [modalmessage, setModalmessage] = useState('');
   const [id, setId] = useState(-1);  // element to delete
   const [employees, setEmployees] = useState([]);
 
+  // Download employees
   useEffect(() => {
     fetch('http://localhost:8080/api/employees')
        .then((res) => res.json())
@@ -24,11 +26,26 @@ function App() {
        .catch((err) => {
           console.log(err.message);
        });
- }, [count]);  // run this function when component is loaded
+ }, [employees]);  // run this function when component is loaded
+
+  // Show toast
+  useEffect(() => {
+    if(toastmessage.length > 0)
+      setShowtoast(true);
+ }, [toastmessage]);  // run toast when toastmessage changes
+
+ // Reset toast
+ useEffect(() => {
+  if(showtoast==false)
+    setToastmessage('');  // reset toast message when toast disappear
+}, [showtoast]);  
+
 
 
   return (
     <>
+    <MyToast message={toastmessage} visible={showtoast} toggleClose={ () => { setShowtoast(false); setToastmessage(''); } } ></MyToast>
+  
     {/* Create some comment:  */}
     {/*
     <button type="button" className="btn btn-primary">Primary</button>
@@ -64,21 +81,34 @@ function App() {
       <td>{item.email}</td>
       <td>{item.pay}</td>
       <td><MyButton onClick={()=>{
-        setModalmessage('Do you really want to delete item n. '+item.id+' ('+item.firstName+' '+item.lastName+')?');
         setId(item.id);
-        setShowmodal(true);}}>Delete</MyButton></td>
+        //setId(100); // test error
+        setModalmessage('Do you really want to delete item n. '+item.id+' ('+item.firstName+' '+item.lastName+')?');
+        setShowmodal(true);
+        }}>Delete</MyButton></td>
     </tr>)}
   </tbody>
   </table>
 
   <MyButton onClick={()=>setShowtoast(true)}>Show Toast</MyButton>
-  <MyToast visible={showtoast} toggleClose={ () => setShowtoast(false) } ></MyToast>
   <MyModal visible={showmodal} title={'Warning'} 
   message={modalmessage} 
   handleClose={() => setShowmodal(false)} 
   handleConfirm={() => {setShowmodal(false); 
     fetch('http://localhost:8080/api/employees/'+id, { method: 'DELETE' })
-        .then(() => {setCount(count+1); setShowtoast(true);});
+        .then((response) => {
+          if(response.status == 200) {
+            setToastmessage('Operation successful!');
+            setEmployees([]);
+          }
+          else 
+            setToastmessage('Error! Item not found!');
+        
+        })
+        .catch(error => {
+          setToastmessage('Error! Item not found!');
+          console.error('There was an error!', error);
+      });
     }}
   ></MyModal>
 
